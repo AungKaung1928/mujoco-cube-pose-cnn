@@ -34,9 +34,12 @@ cd ~/personal/ml/mujoco-cube-pose-cnn
       flatten head, and a spatial soft-argmax keypoint head. CPU only, ~4 min per run.
 - [x] **4. Fair baseline.** `baseline_v2.py` refits the classical method with one scalar
       calibrated on the *train* split, so both methods have seen the same labels.
-- [ ] 5. ONNX export + `onnxruntime` latency.
+- [x] **5. ONNX export.** `export_onnx.py` exports, then *proves* the export: max abs
+      output diff vs PyTorch, plus the full task metrics recomputed through
+      `onnxruntime`. A graph can be numerically close and still have a wrong output
+      order or a dropped layer, so the file existing is not the finish line.
 
-Nothing moves to block 2 until the results table below is filled with real numbers.
+Block 1 complete. Every row below is a measurement, not an estimate.
 
 ## Task definition
 
@@ -72,6 +75,8 @@ measurement is how a real result gets thrown away as an error.
 | CNN, flatten head | 130k | `hard` | 100% | 0.75 mm | 2.00 | 0.28 deg | 0.94 | +0.05 mm | 1.70 ms |
 | CNN, soft-argmax head | **27k** | `easy` | 100% | 0.47 mm | 1.04 | 0.16 deg | 0.51 | +0.00 mm | 0.65 ms |
 | CNN, soft-argmax head | **27k** | `hard` | 100% | **0.59 mm** | **1.32** | 0.21 deg | **0.66** | -0.02 mm | 0.65 ms |
+| same, ONNX Runtime, 1 thread | 27k | `hard` | 100% | 0.59 mm | 1.32 | 0.21 deg | 0.66 | -0.02 mm | **0.23 ms** |
+| same, ONNX Runtime, 8 threads | 27k | `hard` | 100% | 0.59 mm | 1.32 | 0.21 deg | 0.66 | -0.02 mm | **0.12 ms** |
 
 Training: 12000 images, 40 epochs, AdamW 2e-3 cosine, batch 64, no augmentation,
 8 CPU threads, ~4 minutes per run.
@@ -116,6 +121,17 @@ is the measurement of why.
 If 1.9 mm is inside tolerance, the CNN is the wrong engineering choice regardless of
 being three times more accurate.
 
+**7. The runtime mattered more than the model.** Identical weights, identical outputs
+(max abs diff `6.6e-7`, task metrics unchanged to two decimals): PyTorch eager needs
+0.65 ms on 8 threads, ONNX Runtime needs **0.23 ms on one thread** and 0.12 ms on
+eight. That is ~2.8x faster on one eighth of the cores. Nothing about the network
+changed — only the execution engine. Before optimising an architecture for edge
+latency, check whether the framework is the cost. Here it was most of it.
+
+With that, the classical method's speed advantage shrinks from 11x to 3.8x
+(0.06 ms vs 0.23 ms, both single-threaded), and a 116 KB ONNX file at 0.23 ms is a
+real deployment target for a C++ ROS 2 node.
+
 ## Measured environment
 
 Intel Core Ultra 5 225H, 14 cores, no GPU, WSL2, software OpenGL (llvmpipe).
@@ -124,3 +140,10 @@ Training runs at ~1750 img/s on 8 threads, decaying to ~1300 img/s (-25 to -35%)
 second half of a 40-epoch run — the CPU hitting its sustained power limit. WSL exposes no
 temperature sensor, so `train.py` prints per-epoch throughput and flags a >20% sustained
 drop as the only available throttling signal.
+
+## Environment gotcha
+
+`torch.onnx.export` on torch 2.14 defaults to the dynamo exporter, which imports
+`onnxscript` and fails if it is absent. Passing `dynamo=False` uses the TorchScript
+exporter and needs no extra dependency. Worth knowing before adding a package to a
+locked-down machine for no reason.
