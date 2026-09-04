@@ -50,12 +50,39 @@ Nothing moves to block 2 until the results table below is filled with real numbe
 
 Held-out split, generated with an independent seed stream. Fill in as steps land.
 
-| method | regime | median xy err (mm) | p95 xy err (mm) | median yaw err (deg) | latency (ms) |
-|---|---|---|---|---|---|
-| OpenCV threshold | easy | | | | |
-| CNN | easy | | | | |
-| OpenCV threshold | hard | | | | |
-| CNN | hard | | | | |
+| method | regime | detect | median xy (mm) | p95 xy (mm) | median yaw (deg) | latency (ms) |
+|---|---|---|---|---|---|---|
+| OpenCV, fixed red hue | easy | 100% | 3.50 | 5.62 | 0.20 | 0.09 |
+| OpenCV, saturation | easy | 100% | 3.54 | 5.54 | 0.18 | 0.11 |
+| OpenCV, fixed red hue | hard | **10%** | 3.84 | 5.76 | 0.14 | 0.11 |
+| OpenCV, saturation | hard | 100% | 3.73 | 5.69 | 0.17 | 0.11 |
+| CNN | easy | | | | | |
+| CNN | hard | | | | | |
+
+`val` split, n=200, independent seed stream. Pixel floor 2.72 mm.
+
+**What step 2 already settled, before any network existed:**
+
+1. The naive prior ("the cube is red") does not survive appearance randomisation —
+   90% detection failure on `hard`. The *accuracy* on the 10% it did find is
+   unchanged, which is the classic trap: a method can look fine on its own metric
+   while silently answering only the easy tenth of the data.
+2. A better hand-written feature ("the cube is the most saturated thing on a
+   near-grey table") survives it completely — 100% detection, same error as `easy`.
+   So robustness is **not** the CNN's selling point here. Picking a stronger
+   classical feature was cheaper and worked.
+3. The remaining error is not noise. Mean radial bias is **+3.2 mm** against a
+   3.7 mm median error, so the baseline is dominated by a *systematic* effect: the
+   silhouette centroid of a 3D box sits outward of the projected centre, because
+   the camera sees the cube's side faces. A hand-written centroid cannot know that.
+
+That third point is the CNN's actual opening: it should absorb the unmodelled
+perspective for free and land near the 2.72 mm pixel floor. If it does not beat
+3.7 mm median, it has no reason to exist here — write that down as the result.
+
+**Fair-baseline note:** the bias is analytically correctable (project the top-face
+outline instead of assuming a point at cube centre). Do that as `baseline v2`
+*after* the CNN, so the comparison stays honest in both directions.
 
 ## Measured environment
 
