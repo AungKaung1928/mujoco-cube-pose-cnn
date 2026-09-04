@@ -71,23 +71,9 @@ def main(regime, split, method, grid):
 
     ok = ~np.isnan(preds[:, 0])
     gt_xy, gt_yaw = labels[:, :2], labels[:, 4]
-    dxy = np.linalg.norm(preds[ok, :2] - gt_xy[ok], axis=1) * 1e3        # mm
-    dyaw = C.yaw_err_deg(preds[ok, 2], gt_yaw[ok])
-
-    # systematic radial bias: the silhouette centroid of a 3D box sits outward of
-    # the projected centre, because the camera sees the side faces. A hand-written
-    # centroid cannot know that. A network absorbs it for free.
-    r_gt = np.linalg.norm(gt_xy[ok], axis=1)
-    r_pr = np.linalg.norm(preds[ok, :2], axis=1)
-    bias = np.mean(r_pr - r_gt) * 1e3
-
-    print(f"\n{regime}/{split}  method={method}  n={n}")
-    print(f"  detected            {ok.sum()}/{n}  ({100*(1-ok.mean()):.1f}% miss)")
-    print(f"  xy  err  median     {np.median(dxy):7.2f} mm      p95 {np.percentile(dxy,95):7.2f} mm")
-    print(f"  yaw err  median     {np.median(dyaw):7.2f} deg     p95 {np.percentile(dyaw,95):7.2f} deg")
-    print(f"  radial bias (mean)  {bias:+7.2f} mm   <- unmodelled perspective, not noise")
-    print(f"  latency             {lat_ms:7.2f} ms/img (1 core)")
-    print(f"  pixel floor         {1000/meta['px_per_m']:7.2f} mm/px")
+    m = C.pose_metrics(preds[ok, :2], preds[ok, 2], gt_xy[ok], gt_yaw[ok])
+    C.print_metrics(m, int(ok.sum()), n, meta["px_per_m"], lat_ms,
+                    header=f"{regime}/{split}  method={method}  n={n}")
 
     if grid:
         tiles = []

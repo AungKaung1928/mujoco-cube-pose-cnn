@@ -79,3 +79,38 @@ def load_split(root, regime, split):
     with open(os.path.join(root, "data", regime, "meta.json")) as f:
         meta = json.load(f)
     return imgs, labels, meta
+
+
+# --- scoring: one implementation, used by BOTH the classical baseline and the CNN ---
+# If these were computed in two places they would drift, and the comparison that
+# this whole project exists to make would be worthless.
+
+def pose_metrics(pred_xy, pred_yaw, gt_xy, gt_yaw):
+    """All errors in mm / degrees. Inputs are metres / radians, already filtered
+    to the detected subset."""
+    dxy = np.linalg.norm(np.asarray(pred_xy) - np.asarray(gt_xy), axis=1) * 1e3
+    dyaw = yaw_err_deg(np.asarray(pred_yaw), np.asarray(gt_yaw))
+    # Systematic radial bias: the silhouette centroid of a 3D box sits outward of
+    # the projected centre, because the camera sees the side faces. A hand-written
+    # centroid cannot know that; a network can absorb it from data.
+    r_gt = np.linalg.norm(np.asarray(gt_xy), axis=1)
+    r_pr = np.linalg.norm(np.asarray(pred_xy), axis=1)
+    return {
+        "xy_median_mm": float(np.median(dxy)),
+        "xy_p95_mm": float(np.percentile(dxy, 95)),
+        "yaw_median_deg": float(np.median(dyaw)),
+        "yaw_p95_deg": float(np.percentile(dyaw, 95)),
+        "radial_bias_mm": float(np.mean(r_pr - r_gt) * 1e3),
+    }
+
+
+def print_metrics(m, n_ok, n, px_per_m, lat_ms=None, header=""):
+    if header:
+        print(f"\n{header}")
+    print(f"  detected            {n_ok}/{n}  ({100*(1-n_ok/n):.1f}% miss)")
+    print(f"  xy  err  median     {m['xy_median_mm']:7.2f} mm      p95 {m['xy_p95_mm']:7.2f} mm")
+    print(f"  yaw err  median     {m['yaw_median_deg']:7.2f} deg     p95 {m['yaw_p95_deg']:7.2f} deg")
+    print(f"  radial bias (mean)  {m['radial_bias_mm']:+7.2f} mm")
+    if lat_ms is not None:
+        print(f"  latency             {lat_ms:7.2f} ms/img")
+    print(f"  pixel floor         {1000/px_per_m:7.2f} mm/px")
