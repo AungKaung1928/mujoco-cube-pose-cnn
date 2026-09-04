@@ -1,0 +1,24 @@
+<mujoco model="cube_pose">
+  <compiler angle="radian"/>
+  <option gravity="0 0 -9.81"/>
+  <visual>
+    <global offwidth="256" offheight="256"/>
+    <quality shadowsize="0"/>
+    <headlight ambient="0.3 0.3 0.3" diffuse="0.4 0.4 0.4" specular="0 0 0"/>
+  </visual>
+
+  <worldbody>
+    <light name="l0" pos="0 0 1.2" dir="0 0 -1" diffuse="0.7 0.7 0.7" specular="0.1 0.1 0.1"/>
+
+    <!-- table top lies in the z=0 plane -->
+    <geom name="table" type="plane" size="0.4 0.4 0.01" rgba="0.75 0.75 0.72 1"/>
+
+    <!-- overhead camera: image plane is parallel to the table, so pixel<->world is exactly affine -->
+    <camera name="top" pos="0 0 0.45" xyaxes="1 0 0 0 1 0" fovy="45"/>
+
+    <body name="cube" pos="0 0 0.03">
+      <freejoint name="cube_free"/>
+      <geom name="cube_geom" type="box" size="0.03 0.03 0.03" rgba="0.8 0.15 0.15 1"/>
+    </body>
+  </worldbody>
+</mujoco>
