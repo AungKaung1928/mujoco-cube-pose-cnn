@@ -1,0 +1,19 @@
+{
+  "xy_median_mm": 0.7548767096662032,
+  "xy_p95_mm": 2.000155092679566,
+  "yaw_median_deg": 0.27950919952749287,
+  "yaw_p95_deg": 0.9413438164006218,
+  "radial_bias_mm": 0.04879283843803853,
+  "epoch": 40,
+  "latency_ms": 1.7008914500001993,
+  "params": 130452,
+  "args": {
+    "regime": "hard",
+    "head": "flat",
+    "epochs": 40,
+    "bs": 64,
+    "lr": 0.002,
+    "limit": 0,
+    "seed": 0
+  }
+}

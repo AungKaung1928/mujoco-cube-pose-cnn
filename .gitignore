@@ -2,6 +2,10 @@ data/
 out/
 __pycache__/
 *.npy
-*.onnx
-*.pt
-runs/
+# runs/: metrics, ONNX report, the exported graph (116 KB) and the three checkpoints
+# (116-531 KB) are tracked so every README number can be re-scored without training.
+runs/*/*
+!runs/*/metrics.json
+!runs/*/onnx_report.json
+!runs/*/model.onnx
+!runs/*/final.pt

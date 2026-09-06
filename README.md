@@ -41,6 +41,27 @@ cd ~/personal/ml/mujoco-cube-pose-cnn
 
 Block 1 complete. Every row below is a measurement, not an estimate.
 
+**Correction, 2026-09-06.** The first version of `train.py` kept the epoch with the
+lowest *val* error and reported that epoch's val numbers — a small leak: the split
+you select on cannot also be the split you report on. Two of the three runs had
+already settled on the final epoch (40), so their numbers are unchanged. The third
+(`easy` / soft-argmax, which had picked epoch 38) was retrained with the fixed
+script, which reports the **final** epoch and selects on nothing; its row below is
+the new number — 0.48 mm against 0.47 before, so the leak cost nothing measurable,
+which is the point of checking rather than assuming. Block 2 took the lesson further and holds out a tune split from
+*train* so val is touched exactly once.
+
+Check any row without retraining:
+
+```bash
+cd ~/personal/ml/mujoco-cube-pose-cnn && ./verify.sh
+```
+
+Tier 1 is `test_common.py` — the yaw fold, the projection and the metric checked
+against values derived on paper, no data needed. Tiers 2–3 need `data/` (~30 s to
+regenerate) and re-score the tracked checkpoints (`runs/*/final.pt`) through PyTorch
+and ONNX Runtime.
+
 ## Task definition
 
 - **Position** `(x, y)` in metres, cube centre, table frame. Sampled in `+-0.075 m`.
@@ -73,7 +94,7 @@ measurement is how a real result gets thrown away as an error.
 | **v2** OpenCV + 1 calibrated scalar | 1 | `easy` | 100% | 1.94 mm | 2.84 | 0.18 deg | 1.50 | +0.16 mm | 0.04 ms |
 | **v2** OpenCV + 1 calibrated scalar | 1 | `hard` | 100% | 1.91 mm | 2.89 | 0.19 deg | 1.66 | +0.01 mm | 0.06 ms |
 | CNN, flatten head | 130k | `hard` | 100% | 0.75 mm | 2.00 | 0.28 deg | 0.94 | +0.05 mm | 1.70 ms |
-| CNN, soft-argmax head | **27k** | `easy` | 100% | 0.47 mm | 1.04 | 0.16 deg | 0.51 | +0.00 mm | 0.65 ms |
+| CNN, soft-argmax head | **27k** | `easy` | 100% | 0.48 mm | 1.04 | 0.16 deg | 0.51 | -0.01 mm | 0.65 ms |
 | CNN, soft-argmax head | **27k** | `hard` | 100% | **0.59 mm** | **1.32** | 0.21 deg | **0.66** | -0.02 mm | 0.65 ms |
 | same, ONNX Runtime, 1 thread | 27k | `hard` | 100% | 0.59 mm | 1.32 | 0.21 deg | 0.66 | -0.02 mm | **0.23 ms** |
 | same, ONNX Runtime, 8 threads | 27k | `hard` | 100% | 0.59 mm | 1.32 | 0.21 deg | 0.66 | -0.02 mm | **0.12 ms** |

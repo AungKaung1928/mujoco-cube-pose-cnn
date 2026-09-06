@@ -33,7 +33,7 @@ def main(a):
 
     run = os.path.join(ROOT, "runs", f"{a.regime}_{a.head}")
     net = PoseNet(a.head)
-    net.load_state_dict(torch.load(os.path.join(run, "best.pt"), map_location="cpu"))
+    net.load_state_dict(torch.load(os.path.join(run, "final.pt"), map_location="cpu"))
     net.eval()
 
     va_i, va_l, meta = C.load_split(ROOT, a.regime, "val")

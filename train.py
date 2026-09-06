@@ -12,6 +12,12 @@ later has something honest to be compared against.
 Throughput is printed every epoch. On this machine there is no CPU temperature
 sensor, so a sustained drop of more than 20% from the first epoch's rate is the
 only available throttling signal, and the run says so out loud when it happens.
+
+The reported numbers are the FINAL epoch's, scored on val once. Val is printed
+every epoch so the curve is visible, but nothing is selected on it: the first
+version of this script kept the epoch with the lowest val error, which is a small
+but real leak -- the split you choose on cannot also be the split you report on.
+With a cosine schedule the last epoch is where the weights settle anyway.
 """
 import argparse, json, os, time
 import numpy as np
@@ -80,7 +86,7 @@ def main(a):
     print(f"{a.regime}/{a.head}  train={n}  val={len(va_i)}  params={net.n_params():,}  "
           f"threads={torch.get_num_threads()}")
 
-    best, first_rate = None, None
+    first_rate, m = None, None
     for ep in range(1, a.epochs + 1):
         perm = np.random.permutation(n)
         tot, seen, t0 = 0.0, 0, time.perf_counter()
@@ -106,9 +112,8 @@ def main(a):
               f"xy {m['xy_median_mm']:6.2f} mm  yaw {m['yaw_median_deg']:5.2f} deg  "
               f"bias {m['radial_bias_mm']:+5.2f}  {rate:6.1f} img/s{flag}")
 
-        if best is None or m["xy_median_mm"] < best["xy_median_mm"]:
-            best = dict(m, epoch=ep)
-            torch.save(net.state_dict(), os.path.join(out, "best.pt"))
+    final = dict(m, epoch=a.epochs)
+    torch.save(net.state_dict(), os.path.join(out, "final.pt"))
 
     # single-image latency, the number that matters for a real perception node
     net.eval()
@@ -121,9 +126,9 @@ def main(a):
             net(x)
         lat = (time.perf_counter() - t0) / 200 * 1e3
 
-    C.print_metrics(best, len(va_i), len(va_i), meta["px_per_m"], lat,
-                    header=f"BEST  {a.regime}/{a.head}  epoch {best['epoch']}")
-    json.dump({**best, "latency_ms": lat, "params": net.n_params(),
+    C.print_metrics(final, len(va_i), len(va_i), meta["px_per_m"], lat,
+                    header=f"FINAL  {a.regime}/{a.head}  epoch {final['epoch']}")
+    json.dump({**final, "latency_ms": lat, "params": net.n_params(),
                "args": vars(a)}, open(os.path.join(out, "metrics.json"), "w"), indent=2)
     print(f"  saved               {out}/")
 
