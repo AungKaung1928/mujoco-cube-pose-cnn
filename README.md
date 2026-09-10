@@ -16,9 +16,13 @@ Two dataset regimes, one model, one classical baseline, four measurements.
 
 ## Setup
 
+From a fresh clone. CPU-only throughout; there is no CUDA in this project.
+
 ```bash
-source ~/personal/ml/env.sh     # CPU torch, MUJOCO_GL=glfw, threads capped at 8
-cd ~/personal/ml/mujoco-cube-pose-cnn
+git clone https://github.com/AungKaung1928/mujoco-cube-pose-cnn.git
+cd mujoco-cube-pose-cnn
+python3 -m venv .venv && . .venv/bin/activate
+pip install -r requirements.txt
 ```
 
 ## Steps
@@ -54,8 +58,12 @@ which is the point of checking rather than assuming. Block 2 took the lesson fur
 Check any row without retraining:
 
 ```bash
-cd ~/personal/ml/mujoco-cube-pose-cnn && ./verify.sh
+./verify.sh
 ```
+
+`verify.sh` defaults `MUJOCO_GL` to `glfw` and pins the thread count, because
+both change the numbers. Override either if your machine wants a different
+rendering backend.
 
 Tier 1 is `test_common.py` — the yaw fold, the projection and the metric checked
 against values derived on paper, no data needed. Tiers 2–3 need `data/` (~30 s to

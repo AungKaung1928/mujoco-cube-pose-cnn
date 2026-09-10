@@ -8,13 +8,28 @@
 # the tracked checkpoints, so the CNN rows can be checked without retraining.
 set -u
 cd "$(dirname "$0")"
-source ~/personal/ml/env.sh
+# Python comes from whatever environment is active. A venv is expected but not
+# required; requirements.txt lists everything this repo imports.
+PY="${PYTHON:-python3}"
+if ! "$PY" -c 'import numpy, torch, cv2, mujoco, onnxruntime' 2>/dev/null; then
+  echo "dependencies are not importable with '$PY'. From the repo root:" >&2
+  echo "    python3 -m venv .venv && . .venv/bin/activate" >&2
+  echo "    pip install -r requirements.txt" >&2
+  exit 1
+fi
+
+# Both honour whatever is already exported. The defaults are what every number
+# in the README was measured with: software GL, and a thread count held fixed
+# so two runs on the same machine are comparable.
+export MUJOCO_GL="${MUJOCO_GL:-glfw}"
+export OMP_NUM_THREADS="${OMP_NUM_THREADS:-8}"
+export MKL_NUM_THREADS="${MKL_NUM_THREADS:-$OMP_NUM_THREADS}"
 
 hr() { printf '\n=== %s ===\n' "$1"; }
 have_data() { [ -f "data/hard/val_images.npy" ]; }
 
 hr "1/3  conventions -- hand-computed cases"
-python test_common.py || exit 1
+"$PY" test_common.py || exit 1
 
 if ! have_data; then
   hr "2-3/3  skipped -- no dataset"
@@ -28,13 +43,13 @@ MSG
 fi
 
 hr "2/3  classical baselines on val (v1 fixed priors, v2 calibrated on train)"
-python baseline_cv.py --regime hard --method red || exit 1
-python baseline_cv.py --regime hard --method sat || exit 1
-python baseline_v2.py --regime hard --method sat || exit 1
+"$PY" baseline_cv.py --regime hard --method red || exit 1
+"$PY" baseline_cv.py --regime hard --method sat || exit 1
+"$PY" baseline_v2.py --regime hard --method sat || exit 1
 
 hr "3/3  CNN rows -- re-score the tracked checkpoint through PyTorch and ONNX Runtime"
 # Rewrites runs/hard_softargmax/model.onnx from the tracked final.pt and prints the
 # task metrics twice (torch, onnxruntime); both must match the README table.
-python export_onnx.py --regime hard --head softargmax || exit 1
+"$PY" export_onnx.py --regime hard --head softargmax || exit 1
 echo
 echo "Latency rows are only comparable on an idle box: check 'uptime' first."

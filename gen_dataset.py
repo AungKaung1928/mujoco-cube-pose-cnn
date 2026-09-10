@@ -3,7 +3,7 @@
 The labels are free: they are the numbers we typed into the simulator before
 rendering. That is the whole reason robot-learning work starts in sim.
 
-Usage (from ~/personal/ml, after `source env.sh`):
+Usage (from the repo root, with the virtualenv active):
     python gen_dataset.py --regime easy --n 500          # smoke test
     python gen_dataset.py --regime easy --n 12000
     python gen_dataset.py --regime hard --n 12000
