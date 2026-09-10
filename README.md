@@ -14,6 +14,8 @@ Two dataset regimes, one model, one classical baseline, four measurements.
 | `easy` | fixed cube colour, fixed light | colour-threshold baseline should win or tie |
 | `hard` | random cube hue, random light position and intensity, random table shade | baseline should degrade, CNN should not |
 
+**Walkthrough:** https://aungkaung1928.github.io/projects/cube-pose-cnn.html — the same project explained end to end, file by file.
+
 ## Setup
 
 From a fresh clone. CPU-only throughout; there is no CUDA in this project.
