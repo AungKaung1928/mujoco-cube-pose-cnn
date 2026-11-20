@@ -71,7 +71,7 @@ Check any row without retraining:
 both change the numbers. Override either if your machine wants a different
 rendering backend.
 
-Tier 1 is `test_common.py` — the yaw fold, the projection and the metric checked
+Tier 1 is `test_common.py` and `test_model.py` — the yaw fold, the projection, the metric, the two heads' parameter counts and the soft-argmax pixel convention, checked
 against values derived on paper, no data needed. Tiers 2–3 need `data/` (~30 s to
 regenerate) and re-score the tracked checkpoints (`runs/*/final.pt`) through PyTorch
 and ONNX Runtime.

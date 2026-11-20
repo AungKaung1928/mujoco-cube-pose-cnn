@@ -16,3 +16,17 @@ jobs:
       - run: pip install numpy
       - name: pose geometry, yaw convention, pixel scale (hand-computed cases)
         run: python test_common.py
+
+  model:
+    runs-on: ubuntu-latest
+    env:
+      OMP_NUM_THREADS: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      # CPU wheel only; the model is tiny and CI has no GPU.
+      - run: pip install numpy && pip install torch --index-url https://download.pytorch.org/whl/cpu
+      - name: parameter counts (130k / 27k) and soft-argmax convention (hand-computed cases)
+        run: python test_model.py
