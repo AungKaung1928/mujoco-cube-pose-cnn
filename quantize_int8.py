@@ -4,6 +4,8 @@ scored with the same metric as training. One thread throughout.
     python quantize_int8.py            # hard_softargmax -> runs/hard_softargmax/int8_report.json
     python quantize_int8.py --fp32 /head/head.0/ --tag _fp32softargmax
     python quantize_int8.py --fp32 /head/head.0/ /kp/ --tag _fp32kp
+    python quantize_int8.py --fp32 /head/head.0/Softmax --tag _fp32smonly
+    python quantize_int8.py --fp32 /head/head.0/Mul /head/head.0/ReduceSum --tag _fp32expect
 
 The question is whether a sub-millimetre regressor survives INT8 the way a detector
 does: the soft-argmax reads position off a spatial softmax, so quantised logits move

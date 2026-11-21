@@ -76,6 +76,9 @@ int8 = [f"from {q0['fp32']['xy_median_mm']:.3f} to {q0['int8']['xy_median_mm']:.
         f"gives {qs['int8']['xy_median_mm']:.3f} mm and bias {qs['int8']['radial_bias_mm']:.2f} mm",
         f"keypoint conv, {qk['int8']['xy_median_mm']:.3f} mm",
         f"{q0['latency_ms_p50_1t']['fp32']:.3f} → {q0['latency_ms_p50_1t']['int8']:.3f} ms"]
+sm8, ex8 = (load("hard_softargmax", f"int8_report{t}.json")["int8"] for t in ("_fp32smonly", "_fp32expect"))
+int8 += [f"Softmax node alone in fp32 gives {sm8['xy_median_mm']:.3f} mm",
+         f"(Mul, ReduceSum) {ex8['xy_median_mm']:.3f} mm and bias {ex8['radial_bias_mm']:.2f} mm"]
 check("INT8 key point", all(x in text for x in int8) and q0["fp32"] == load("hard_softargmax", "onnx_report.json")["onnx"]
       and qs["fp32_nodes"] > 0 and qk["fp32_nodes"] > qs["fp32_nodes"], f"missing: {[x for x in int8 if x not in text]}")
 
