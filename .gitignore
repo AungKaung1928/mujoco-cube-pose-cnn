@@ -9,3 +9,5 @@ runs/*/*
 !runs/*/onnx_report.json
 !runs/*/model.onnx
 !runs/*/final.pt
+!runs/*/int8_report*.json
+!runs/*/model_int8*.onnx

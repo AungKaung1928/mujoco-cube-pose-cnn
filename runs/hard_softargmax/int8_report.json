@@ -1,0 +1,34 @@
+{
+ "run": "hard_softargmax",
+ "ort": "1.23.2",
+ "fp32_prefixes": [],
+ "fp32_nodes": 0,
+ "calib_images": 200,
+ "calib_split": "train",
+ "val_images": 2000,
+ "bytes": {
+  "fp32": 119124,
+  "int8": 59849
+ },
+ "fp32": {
+  "xy_median_mm": 0.5865291780179749,
+  "xy_p95_mm": 1.3159038503312817,
+  "yaw_median_deg": 0.2096580483105876,
+  "yaw_p95_deg": 0.6588670065488841,
+  "radial_bias_mm": -0.020098345822714143
+ },
+ "int8": {
+  "xy_median_mm": 1.0306332670350589,
+  "xy_p95_mm": 2.130677983353553,
+  "yaw_median_deg": 0.29773293989129174,
+  "yaw_p95_deg": 0.8764606376755609,
+  "radial_bias_mm": -0.6959331800947384
+ },
+ "latency_ms_p50_1t": {
+  "fp32": 0.2211,
+  "int8": 0.1821
+ },
+ "rounds": 5,
+ "n_time": 500,
+ "load1": 1.62
+}

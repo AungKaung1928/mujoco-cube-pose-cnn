@@ -70,5 +70,14 @@ text = "\n".join(LINES)
 check("pipeline diagram", all(d in text for d in diagram),
       f"missing: {[d for d in diagram if d not in text]}")
 
+q0, qs, qk = (load("hard_softargmax", f"int8_report{t}.json") for t in ("", "_fp32softargmax", "_fp32kp"))
+int8 = [f"from {q0['fp32']['xy_median_mm']:.3f} to {q0['int8']['xy_median_mm']:.3f} mm",
+        f"radial bias from {q0['fp32']['radial_bias_mm']:.2f} to {q0['int8']['radial_bias_mm']:.2f} mm",
+        f"gives {qs['int8']['xy_median_mm']:.3f} mm and bias {qs['int8']['radial_bias_mm']:.2f} mm",
+        f"keypoint conv, {qk['int8']['xy_median_mm']:.3f} mm",
+        f"{q0['latency_ms_p50_1t']['fp32']:.3f} → {q0['latency_ms_p50_1t']['int8']:.3f} ms"]
+check("INT8 key point", all(x in text for x in int8) and q0["fp32"] == load("hard_softargmax", "onnx_report.json")["onnx"]
+      and qs["fp32_nodes"] > 0 and qk["fp32_nodes"] > qs["fp32_nodes"], f"missing: {[x for x in int8 if x not in text]}")
+
 print(f"\n{'FAILED: ' + ', '.join(FAILED) if FAILED else 'all passed'}")
 raise SystemExit(1 if FAILED else 0)
