@@ -6,6 +6,7 @@ scored with the same metric as training. One thread throughout.
     python quantize_int8.py --fp32 /head/head.0/ /kp/ --tag _fp32kp
     python quantize_int8.py --fp32 /head/head.0/Softmax --tag _fp32smonly
     python quantize_int8.py --fp32 /head/head.0/Mul /head/head.0/ReduceSum --tag _fp32expect
+    python quantize_int8.py --act16 --tag _a16w8   # 16-bit activations, INT8 weights
 
 The question is whether a sub-millimetre regressor survives INT8 the way a detector
 does: the soft-argmax reads position off a spatial softmax, so quantised logits move
@@ -65,7 +66,7 @@ def main(a):
     quant_pre_process(fp32, pre, skip_symbolic_shape=False)
     keep = [n.name for n in onnx.load(pre).graph.node if any(n.name.startswith(p) for p in a.fp32)]
     quantize_static(pre, q8, Calib(tr_i, a.calib), quant_format=QuantFormat.QDQ,
-                    activation_type=QuantType.QUInt8, weight_type=QuantType.QInt8,
+                    activation_type=QuantType.QUInt16 if a.act16 else QuantType.QUInt8, weight_type=QuantType.QInt8,
                     per_channel=True, calibrate_method=CalibrationMethod.MinMax, nodes_to_exclude=keep)
     os.remove(pre)
     s32, s8 = sess(fp32), sess(q8)
@@ -82,7 +83,7 @@ def main(a):
                 s.run(None, {"image": x})
                 ts.append(time.perf_counter() - t0)
             t[k].append(float(np.median(ts)) * 1e3)
-    out = {"run": a.run, "ort": ort.__version__, "fp32_prefixes": a.fp32, "fp32_nodes": len(keep), "calib_images": a.calib, "calib_split": "train",
+    out = {"run": a.run, "ort": ort.__version__, "fp32_prefixes": a.fp32, "fp32_nodes": len(keep), "activations": "uint16" if a.act16 else "uint8", "calib_images": a.calib, "calib_split": "train",
            "val_images": len(va_i), "bytes": {"fp32": os.path.getsize(fp32), "int8": os.path.getsize(q8)},
            "fp32": m32, "int8": m8,
            "latency_ms_p50_1t": {k: round(float(np.median(v)), 4) for k, v in t.items()},
@@ -101,5 +102,6 @@ if __name__ == "__main__":
     ap.add_argument("--n-time", type=int, default=500)
     ap.add_argument("--rounds", type=int, default=5)
     ap.add_argument("--fp32", nargs="*", default=[], help="node-name prefixes left in fp32, e.g. /head/head.0/ /kp/")
+    ap.add_argument("--act16", action="store_true", help="16-bit activations (A16W8) instead of uint8")
     ap.add_argument("--tag", default="", help="suffix for the report and graph file names")
     main(ap.parse_args())
