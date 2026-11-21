@@ -16,6 +16,8 @@ jobs:
       - run: pip install numpy
       - name: pose geometry, yaw convention, pixel scale (hand-computed cases)
         run: python test_common.py
+      - name: README numbers vs runs/*/metrics.json
+        run: python test_readme.py
 
   model:
     runs-on: ubuntu-latest
