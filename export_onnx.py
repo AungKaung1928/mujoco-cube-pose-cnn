@@ -37,7 +37,9 @@ def main(a):
     net.eval()
 
     va_i, va_l, meta = C.load_split(ROOT, a.regime, "val")
-    path = os.path.join(run, "model.onnx")
+    out = a.out_dir or run
+    os.makedirs(out, exist_ok=True)
+    path = os.path.join(out, "model.onnx")
 
     dummy, _ = to_batch(va_i, np.array([0]))
     torch.onnx.export(
@@ -90,11 +92,12 @@ def main(a):
     print(f"  latency 8 threads   {lat[8]:7.2f} ms/img")
 
     json.dump({"onnx": m_onnx, "torch": m_torch, "max_abs_diff": dmax,
-               "latency_ms": lat}, open(os.path.join(run, "onnx_report.json"), "w"), indent=2)
+               "latency_ms": lat}, open(os.path.join(out, "onnx_report.json"), "w"), indent=2)
 
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--regime", default="hard", choices=C.REGIMES)
     p.add_argument("--head", default="softargmax", choices=["flat", "softargmax"])
+    p.add_argument("--out-dir", default="", help="where model.onnx and onnx_report.json go (default: the run folder)")
     main(p.parse_args())

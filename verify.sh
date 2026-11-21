@@ -49,8 +49,9 @@ hr "2/3  classical baselines on val (v1 fixed priors, v2 calibrated on train)"
 "$PY" baseline_v2.py --regime hard --method sat || exit 1
 
 hr "3/3  CNN rows -- re-score the tracked checkpoint through PyTorch and ONNX Runtime"
-# Rewrites runs/hard_softargmax/model.onnx from the tracked final.pt and prints the
-# task metrics twice (torch, onnxruntime); both must match the README table.
-"$PY" export_onnx.py --regime hard --head softargmax || exit 1
+# Exports the tracked final.pt again and prints the task metrics twice (torch, onnxruntime);
+# both must match the README table. Written to out/ (ignored) so the tracked model.onnx and
+# onnx_report.json, whose latency moves between runs, stay as committed.
+"$PY" export_onnx.py --regime hard --head softargmax --out-dir out/verify_onnx || exit 1
 echo
 echo "Latency rows are only comparable on an idle box: check 'uptime' first."
