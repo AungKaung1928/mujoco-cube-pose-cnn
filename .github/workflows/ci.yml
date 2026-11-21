@@ -32,3 +32,6 @@ jobs:
       - run: pip install numpy && pip install torch --index-url https://download.pytorch.org/whl/cpu
       - name: parameter counts (130k / 27k) and soft-argmax convention (hand-computed cases)
         run: python test_model.py
+      - run: pip install onnxruntime
+      - name: tracked model.onnx is still the tracked final.pt (README ONNX rows)
+        run: python test_onnx_parity.py
