@@ -53,5 +53,16 @@ hr "3/3  CNN rows -- re-score the tracked checkpoint through PyTorch and ONNX Ru
 # both must match the README table. Written to out/ (ignored) so the tracked model.onnx and
 # onnx_report.json, whose latency moves between runs, stay as committed.
 "$PY" export_onnx.py --regime hard --head softargmax --out-dir out/verify_onnx || exit 1
+# Task metrics (not latency) must equal the tracked report: same weights, same split.
+"$PY" - <<'PY' || exit 1
+import json, math, sys
+new = json.load(open("out/verify_onnx/onnx_report.json"))
+old = json.load(open("runs/hard_softargmax/onnx_report.json"))
+bad = [f"{b}.{k}: {new[b][k]} vs tracked {v}" for b in ("torch", "onnx") for k, v in old[b].items()
+       if not math.isclose(new[b][k], v, rel_tol=1e-6, abs_tol=1e-6)]
+print("task metrics vs runs/hard_softargmax/onnx_report.json:", "MISMATCH" if bad else "match")
+print("\n".join(bad))
+sys.exit(1 if bad else 0)
+PY
 echo
 echo "Latency rows are only comparable on an idle box: check 'uptime' first."
