@@ -40,6 +40,8 @@ flowchart LR
 | same, ONNX Runtime, 1 thread | 27k | `hard` | 100% | 0.59 mm | 1.32 | 0.21 deg | 0.66 | **0.23 ms** |
 | same, ONNX Runtime, 8 threads | 27k | `hard` | 100% | 0.59 mm | 1.32 | 0.21 deg | 0.66 | **0.12 ms** |
 
+One-thread ONNX latency moves between runs on this laptop: 0.23 ms in the table, 0.27 ms in the committed `runs/hard_softargmax/onnx_report.json`, 0.19 to 0.23 ms in reruns on 2026-11-21. Read it as about 0.2 ms; the accuracy columns are exact across runs.
+
 Full table with the `easy` regime and radial-bias column is in the Results section below.
 
 ### Key points
