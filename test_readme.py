@@ -82,8 +82,11 @@ int8 += [f"Softmax node alone in fp32 gives {sm8['xy_median_mm']:.3f} mm",
 a16 = load("hard_softargmax", "int8_report_a16w8.json")
 int8 += [f"(`--act16`) confirm it, {a16['int8']['xy_median_mm']:.3f} mm and bias {a16['int8']['radial_bias_mm']:.2f} mm",
          f"run at {a16['latency_ms_p50_1t']['int8']:.3f} ms against fp32's {a16['latency_ms_p50_1t']['fp32']:.3f} ms"]
+mech = load("hard_softargmax", "int8_mechanism.json")["rows"]
+int8 += [f"logits {mech['logits']['xy_median_mm']:.3f} mm, probability map {mech['probability_map']['xy_median_mm']:.3f} mm, "
+         f"both {mech['both']['xy_median_mm']:.3f} mm and bias {mech['both']['radial_bias_mm']:.2f} mm"]
 check("INT8 key point", all(x in text for x in int8) and q0["fp32"] == load("hard_softargmax", "onnx_report.json")["onnx"]
-      and a16["activations"] == "uint16" and qs["fp32_nodes"] > 0 and qk["fp32_nodes"] > qs["fp32_nodes"], f"missing: {[x for x in int8 if x not in text]}")
+      and a16["activations"] == "uint16" and abs(mech["fp32"]["xy_median_mm"] - load("hard_softargmax")["xy_median_mm"]) < 1e-9 and qs["fp32_nodes"] > 0 and qk["fp32_nodes"] > qs["fp32_nodes"], f"missing: {[x for x in int8 if x not in text]}")
 
 print(f"\n{'FAILED: ' + ', '.join(FAILED) if FAILED else 'all passed'}")
 raise SystemExit(1 if FAILED else 0)

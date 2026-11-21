@@ -11,3 +11,4 @@ runs/*/*
 !runs/*/final.pt
 !runs/*/int8_report*.json
 !runs/*/model_int8*.onnx
+!runs/*/int8_mechanism.json
