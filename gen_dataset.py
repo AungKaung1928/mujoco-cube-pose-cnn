@@ -73,7 +73,7 @@ def generate(regime, n, img_size, seed, split):
     imgs = np.lib.format.open_memmap(
         base + "_images.npy", mode="w+", dtype=np.uint8, shape=(n, img_size, img_size, 3)
     )
-    # label columns: x, y, sin4t, cos4t, raw_yaw (raw kept only for debugging)
+    # label columns: x, y, sin4t, cos4t, raw_yaw (the yaw metrics score against, via the 90 deg fold)
     labels = np.zeros((n, 5), dtype=np.float32)
 
     t0 = time.perf_counter()
