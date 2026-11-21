@@ -43,5 +43,32 @@ for label, run in (("OpenCV, fixed red hue", "baseline_red"), ("OpenCV, saturati
             f"{m['yaw_p95_deg']:.2f}"]
     check(label, got == want, f"README {got} vs JSON {want}")
 
+# The pipeline diagram at the top repeats the headline numbers (latency left out, as above).
+def load(run, name="metrics.json"):
+    with open(os.path.join(HERE, "runs", run, name)) as f:
+        return json.load(f)
+
+
+red, sat, v2 = load("baseline_red"), load("baseline_sat"), load("baseline_v2")
+flat, soft = load("hard_flat"), load("hard_softargmax")
+onnx = load("hard_softargmax", "onnx_report.json")
+tenths = (2000 * red["detected"] + red["n"]) // (2 * red["n"])
+gap = (sat["xy_median_mm"] - v2["xy_median_mm"]) / (sat["xy_median_mm"] - soft["xy_median_mm"])
+diagram = [
+    f"red hue: detect {tenths // 10}.{tenths % 10}%, {red['xy_median_mm']:.2f} mm",
+    f"saturation: detect 100%, {sat['xy_median_mm']:.2f} mm" if sat["detected"] == sat["n"] else "?",
+    f"radial bias {sat['radial_bias_mm']:+.2f} mm",
+    f"k = {v2['radial_scale_k']:.3f}, radial bias {v2['radial_bias_mm']:+.2f} mm",
+    f"{v2['xy_median_mm']:.2f} mm median, p95 {v2['xy_p95_mm']:.2f} mm",
+    f"{flat['params'] // 1000}k params<br/>{flat['xy_median_mm']:.2f} mm median, p95 {flat['xy_p95_mm']:.2f} mm",
+    f"{soft['params'] // 1000}k params<br/>{soft['xy_median_mm']:.2f} mm median, p95 {soft['xy_p95_mm']:.2f} mm",
+    f"{soft['xy_median_mm']:.2f} mm, max abs diff {onnx['max_abs_diff']:.1e}".replace("e-0", "e-"),
+    f"fix the {100 * (v2['radial_scale_k'] - 1):.1f}% radial bias: {sat['xy_median_mm']:.2f} to "
+    f"{v2['xy_median_mm']:.2f} mm, {100 * gap:.0f}% of the gap",
+]
+text = "\n".join(LINES)
+check("pipeline diagram", all(d in text for d in diagram),
+      f"missing: {[d for d in diagram if d not in text]}")
+
 print(f"\n{'FAILED: ' + ', '.join(FAILED) if FAILED else 'all passed'}")
 raise SystemExit(1 if FAILED else 0)
