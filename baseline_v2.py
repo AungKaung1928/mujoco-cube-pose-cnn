@@ -51,10 +51,14 @@ def main(a):
     m = C.pose_metrics(xy, va_p[ok, 2], va_l[ok, :2], va_l[ok, 4])
     C.print_metrics(m, int(ok.sum()), int(ok.size), meta["px_per_m"], lat,
                     header=f"baseline v2 (calibrated)  {a.regime}/val  method={a.method}")
+    if a.out:
+        C.write_metrics(a.out, m, int(ok.sum()), int(ok.size), lat, regime=a.regime, split="val",
+                        method=a.method, radial_scale_k=k)
 
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--regime", default="hard", choices=C.REGIMES)
     p.add_argument("--method", default="sat", choices=["red", "sat"])
+    p.add_argument("--out", default="", help="write the metrics as JSON")
     main(p.parse_args())

@@ -1,0 +1,13 @@
+{
+  "xy_median_mm": 3.4759012874582185,
+  "xy_p95_mm": 6.072186876367198,
+  "yaw_median_deg": 0.19097948042319607,
+  "yaw_p95_deg": 1.2439680784616975,
+  "radial_bias_mm": 2.961758172310467,
+  "detected": 217,
+  "n": 2000,
+  "latency_ms": 0.10184206750091107,
+  "regime": "hard",
+  "split": "val",
+  "method": "red"
+}

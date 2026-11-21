@@ -4,6 +4,7 @@ Everything here is deliberately explicit. No hidden magic, because every number
 in this file shows up later in the error metrics.
 """
 import json
+import os
 import numpy as np
 
 # --- scene constants, must match scene.xml ---
@@ -102,6 +103,13 @@ def pose_metrics(pred_xy, pred_yaw, gt_xy, gt_yaw):
         "yaw_p95_deg": float(np.percentile(dyaw, 95)),
         "radial_bias_mm": float(np.mean(r_pr - r_gt) * 1e3),
     }
+
+
+def write_metrics(path, m, n_ok, n, lat_ms, **extra):
+    """Baseline result in the layout of the CNN runs' metrics.json, plus the detection count."""
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as f:
+        json.dump({**m, "detected": n_ok, "n": n, "latency_ms": lat_ms, **extra}, f, indent=2)
 
 
 def print_metrics(m, n_ok, n, px_per_m, lat_ms=None, header=""):

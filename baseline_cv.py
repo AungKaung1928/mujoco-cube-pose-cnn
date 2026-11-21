@@ -56,7 +56,7 @@ def predict(img_rgb, method, size):
     return float(x), float(y), float(yaw)
 
 
-def main(regime, split, method, grid):
+def main(regime, split, method, grid, out=""):
     imgs, labels, meta = C.load_split(ROOT, regime, split)
     size = meta["img_size"]
     n = len(imgs)
@@ -74,6 +74,8 @@ def main(regime, split, method, grid):
     m = C.pose_metrics(preds[ok, :2], preds[ok, 2], gt_xy[ok], gt_yaw[ok])
     C.print_metrics(m, int(ok.sum()), n, meta["px_per_m"], lat_ms,
                     header=f"{regime}/{split}  method={method}  n={n}")
+    if out:
+        C.write_metrics(out, m, int(ok.sum()), n, lat_ms, regime=regime, split=split, method=method)
 
     if grid:
         tiles = []
@@ -97,5 +99,6 @@ if __name__ == "__main__":
     ap.add_argument("--split", default="val")
     ap.add_argument("--method", choices=list(MASKS), default="sat")
     ap.add_argument("--grid", action="store_true")
+    ap.add_argument("--out", default="", help="write the metrics as JSON, e.g. runs/baseline_sat/metrics.json")
     a = ap.parse_args()
-    main(a.regime, a.split, a.method, a.grid)
+    main(a.regime, a.split, a.method, a.grid, a.out)
