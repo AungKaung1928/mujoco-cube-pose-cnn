@@ -57,7 +57,7 @@ Full table with the `easy` regime and radial-bias column is in the Results secti
 From a fresh clone. CPU-only throughout; there is no CUDA in this project.
 
 ```bash
-git clone https://github.com/AungKaung1928/mujoco-cube-pose-cnn.git
+git clone <this repo URL>
 cd mujoco-cube-pose-cnn
 python3 -m venv .venv && . .venv/bin/activate
 pip install -r requirements.txt
