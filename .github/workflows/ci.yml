@@ -35,3 +35,17 @@ jobs:
       - run: pip install onnxruntime
       - name: tracked model.onnx is still the tracked final.pt (README ONNX rows)
         run: python test_onnx_parity.py
+
+  render:
+    runs-on: ubuntu-latest
+    env:
+      MUJOCO_GL: egl
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libegl1 libgl1-mesa-dri
+      - run: pip install numpy mujoco==3.12.0
+      - name: common.py camera constants vs a MuJoCo render of scene.xml
+        run: python test_render.py
