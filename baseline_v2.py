@@ -39,9 +39,7 @@ def run(regime, split, method):
 def main(a):
     tr_p, tr_l, meta, _ = run(a.regime, "train", a.method)
     ok = ~np.isnan(tr_p[:, 0])
-    r_meas = np.linalg.norm(tr_p[ok, :2], axis=1)
-    r_true = np.linalg.norm(tr_l[ok, :2], axis=1)
-    k = float((r_meas * r_true).sum() / (r_meas ** 2).sum())
+    k = C.fit_radial_scale(tr_p[ok, :2], tr_l[ok, :2])
     print(f"calibrated on {a.regime}/train  n={ok.sum()}  radial scale k = {k:.5f} "
           f"({100*(k-1):+.2f}%)")
 

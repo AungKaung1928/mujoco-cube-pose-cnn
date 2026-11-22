@@ -105,6 +105,14 @@ def pose_metrics(pred_xy, pred_yaw, gt_xy, gt_yaw):
     }
 
 
+def fit_radial_scale(pred_xy, true_xy):
+    """baseline_v2's one learned number: least-squares k for r_true ~ k * r_measured
+    (no intercept), k = sum(r_m * r_t) / sum(r_m^2). Fitted on train, applied to val."""
+    r_meas = np.linalg.norm(np.asarray(pred_xy), axis=1)
+    r_true = np.linalg.norm(np.asarray(true_xy), axis=1)
+    return float((r_meas * r_true).sum() / (r_meas ** 2).sum())
+
+
 def write_metrics(path, m, n_ok, n, lat_ms, **extra):
     """Baseline result in the layout of the CNN runs' metrics.json, plus the detection count."""
     os.makedirs(os.path.dirname(path), exist_ok=True)

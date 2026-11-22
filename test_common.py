@@ -69,6 +69,13 @@ m = C.pose_metrics(gt20 + k[:, None] * [0.6, 0.8], np.zeros(20), gt20, np.zeros(
 check("xy median of 1..20 mm", m["xy_median_mm"], 10.5, 1e-9)
 check("xy p95 of 1..20 mm", m["xy_p95_mm"], 19.05, 1e-9)
 
+print("\nfit_radial_scale: baseline_v2's least-squares k")
+pm = np.array([[0.01, 0.0], [0.0, 0.02], [0.03, 0.04]])     # radii 0.01, 0.02, 0.05
+check("exact 1.02 scale recovered", C.fit_radial_scale(pm, pm * 1.02), 1.02, 1e-12)
+# r_true = (0.011, 0.02, 0.05): k = (0.01*0.011 + 0.02*0.02 + 0.05*0.05) / (0.0001 + 0.0004 + 0.0025)
+check("least squares, not ratio of sums", C.fit_radial_scale(pm, [[0.011, 0.0], [0.0, 0.02], [0.03, 0.04]]),
+      (0.00011 + 0.0004 + 0.0025) / 0.003, 1e-12)
+
 print()
 if FAILED:
     print(f"{len(FAILED)} FAILED: {FAILED}")
