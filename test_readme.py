@@ -1,4 +1,4 @@
-"""README results table (CNN and classical rows) against runs/*/metrics.json (stdlib only).
+"""README / docs/RESULTS.md results table (CNN and classical rows) against runs/*/metrics.json (stdlib only).
 
 Run:  python test_readme.py
 """
@@ -15,8 +15,11 @@ def check(name, ok, detail=""):
         FAILED.append(name)
 
 
-with open(os.path.join(HERE, "README.md"), encoding="utf-8") as f:
-    LINES = f.read().splitlines()
+# README.md is the short page; the full write-up it links lives in docs/RESULTS.md.
+LINES = []
+for doc in ("README.md", os.path.join("docs", "RESULTS.md")):
+    with open(os.path.join(HERE, doc), encoding="utf-8") as f:
+        LINES += f.read().splitlines()
 
 for label, run in (("CNN, flatten head", "hard_flat"), ("CNN, soft-argmax head", "hard_softargmax")):
     with open(os.path.join(HERE, "runs", run, "metrics.json")) as f:
