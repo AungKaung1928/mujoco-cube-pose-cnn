@@ -60,6 +60,15 @@ check("outward prediction -> positive radial bias (mm)", m["radial_bias_mm"], 1.
 m = C.pose_metrics(gt, np.full(2, d(1.0)), gt, np.full(2, d(89.0)))
 check("yaw err reported in deg, folded", m["yaw_median_deg"], 2.0, 1e-9)
 
+print("\npose_metrics: Euclidean xy error, median and p95 on a known spread")
+# errors 1..20 mm along (0.6, 0.8): Euclidean length k mm (an L1 sum would give 1.4 k).
+# median of 1..20 = 10.5; p95 by linear interpolation at rank 0.95*19 = 18.05 -> 19.05
+k = np.arange(1, 21) * 1e-3
+gt20 = np.zeros((20, 2))
+m = C.pose_metrics(gt20 + k[:, None] * [0.6, 0.8], np.zeros(20), gt20, np.zeros(20))
+check("xy median of 1..20 mm", m["xy_median_mm"], 10.5, 1e-9)
+check("xy p95 of 1..20 mm", m["xy_p95_mm"], 19.05, 1e-9)
+
 print()
 if FAILED:
     print(f"{len(FAILED)} FAILED: {FAILED}")
