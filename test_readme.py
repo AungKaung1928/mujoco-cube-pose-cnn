@@ -95,5 +95,12 @@ print("training seed note (runs/*/metrics.json args)")
 seeds = {load(r)["args"]["seed"] for r in ("hard_flat", "hard_softargmax")}
 check("README seed", len(seeds) == 1 and f"one training seed ({seeds.pop()}) per CNN row" in text, "README must name the one seed")
 
+print("retrain commands (runs/*/metrics.json args)")
+for r in ("hard_flat", "hard_softargmax", "easy_softargmax"):
+    a = load(r)["args"]
+    cmd = (f"python train.py --regime {a['regime']} --head {a['head']} --epochs {a['epochs']} "
+           f"--bs {a['bs']} --lr {a['lr']:g} --seed {a['seed']}")
+    check(f"retrain command {r}", a["limit"] == 0 and f"{a['regime']}_{a['head']}" == r and cmd in text, cmd)
+
 print(f"\n{'FAILED: ' + ', '.join(FAILED) if FAILED else 'all passed'}")
 raise SystemExit(1 if FAILED else 0)

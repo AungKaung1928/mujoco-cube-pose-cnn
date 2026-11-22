@@ -93,6 +93,15 @@ measurement is how a real result gets thrown away as an error.
 Training: 12000 images, 40 epochs, AdamW 2e-3 cosine, batch 64, no augmentation,
 8 CPU threads, ~4 minutes per run.
 
+Retrain (each writes `runs/<regime>_<head>/`; `train.py`'s defaults are not these runs':
+20 epochs, flatten head):
+
+```bash
+python train.py --regime hard --head flat --epochs 40 --bs 64 --lr 0.002 --seed 0
+python train.py --regime hard --head softargmax --epochs 40 --bs 64 --lr 0.002 --seed 0
+python train.py --regime easy --head softargmax --epochs 40 --bs 64 --lr 0.002 --seed 0
+```
+
 
 
 ## What the numbers actually say
