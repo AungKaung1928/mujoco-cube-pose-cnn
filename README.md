@@ -2,6 +2,10 @@
 
 Estimates the planar pose `(x, y, yaw)` of a cube from one 128x128 MuJoCo render: a 27k-parameter CNN with a soft-argmax head reaches 0.59 mm median error against 1.91 mm for a calibrated OpenCV baseline, in about 0.2 ms on one thread through ONNX Runtime.
 
+<img src="docs/media/predictions.png" width="720" alt="First 8 hard val images, white outline ground-truth top face, black outline predicted, per-image error above each">
+
+The tracked ONNX model on the first 8 `hard` val images, not selected: white = ground truth, black = prediction (`scripts/make_demo.py`, needs `data/`).
+
 All numbers: `hard` regime (random hue, light, table shade), `val` split, n=2000, median xy error unless stated.
 
 ```mermaid
