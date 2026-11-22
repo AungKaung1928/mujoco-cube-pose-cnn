@@ -6,7 +6,7 @@ Estimates the planar pose `(x, y, yaw)` of a cube from one 128x128 MuJoCo render
 
 The tracked ONNX model on the first 8 `hard` val images, not selected: white = ground truth, black = prediction (`scripts/make_demo.py`, needs `data/`).
 
-All numbers: `hard` regime (random hue, light, table shade), `val` split, n=2000, median xy error unless stated.
+All numbers: `hard` regime (random hue, light, table shade), `val` split, n=2000, one training seed (0) per CNN row, median xy error unless stated.
 
 ```mermaid
 flowchart LR

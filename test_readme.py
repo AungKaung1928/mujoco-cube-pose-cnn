@@ -91,5 +91,9 @@ int8 += [f"logits {mech['logits']['xy_median_mm']:.3f} mm, probability map {mech
 check("INT8 key point", all(x in text for x in int8) and q0["fp32"] == load("hard_softargmax", "onnx_report.json")["onnx"]
       and a16["activations"] == "uint16" and abs(mech["fp32"]["xy_median_mm"] - load("hard_softargmax")["xy_median_mm"]) < 1e-9 and qs["fp32_nodes"] > 0 and qk["fp32_nodes"] > qs["fp32_nodes"], f"missing: {[x for x in int8 if x not in text]}")
 
+print("training seed note (runs/*/metrics.json args)")
+seeds = {load(r)["args"]["seed"] for r in ("hard_flat", "hard_softargmax")}
+check("README seed", len(seeds) == 1 and f"one training seed ({seeds.pop()}) per CNN row" in text, "README must name the one seed")
+
 print(f"\n{'FAILED: ' + ', '.join(FAILED) if FAILED else 'all passed'}")
 raise SystemExit(1 if FAILED else 0)
