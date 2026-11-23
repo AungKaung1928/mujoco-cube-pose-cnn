@@ -32,6 +32,7 @@ hr "1/3  conventions -- hand-computed cases"
 "$PY" test_common.py || exit 1
 "$PY" test_model.py || exit 1
 "$PY" test_render.py || exit 1
+"$PY" test_gen.py || exit 1
 
 if ! have_data; then
   hr "2-3/3  skipped -- no dataset"

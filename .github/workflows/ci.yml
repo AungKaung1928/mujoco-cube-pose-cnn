@@ -49,3 +49,5 @@ jobs:
       - run: pip install numpy mujoco==3.12.0
       - name: common.py camera constants vs a MuJoCo render of scene.xml
         run: python test_render.py
+      - name: gen_dataset labels agree with their images, val seed differs from train
+        run: python test_gen.py

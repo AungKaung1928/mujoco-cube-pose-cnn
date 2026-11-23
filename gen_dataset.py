@@ -119,14 +119,18 @@ def generate(regime, n, img_size, seed, split):
           f"({n/dt:.1f} img/s), {imgs.nbytes/1e6:.0f} MB")
 
 
-if __name__ == "__main__":
+def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--regime", choices=C.REGIMES, required=True)
     ap.add_argument("--n", type=int, default=12000, help="training-split size")
     ap.add_argument("--img-size", type=int, default=128)
     ap.add_argument("--seed", type=int, default=0)
-    a = ap.parse_args()
+    a = ap.parse_args(argv)
 
     # held-out split gets a different seed stream, never mixed with train
     generate(a.regime, a.n, a.img_size, a.seed, "train")
     generate(a.regime, max(200, a.n // 6), a.img_size, a.seed + 10_000, "val")
+
+
+if __name__ == "__main__":
+    main()
