@@ -49,5 +49,17 @@ x = torch.zeros(1, 1, h, w)
 x[0, 0, 4, 12] = 100.0
 check("interior peak (row 4, col 12)", SpatialSoftArgmax()(x)[0].detach().numpy(), [-1 + 24 / 15, -1 + 8 / 15], 1e-6)
 
+print("\ntraining targets and the ONNX decode are inverses")
+import common as C
+from export_onnx import decode
+from train import targets
+yaw = np.radians([5.0, 40.0, 89.0])
+labels = np.c_[[0.07, -0.03, 0.0], [-0.05, 0.02, 0.074], np.sin(4 * yaw), np.cos(4 * yaw), yaw].astype(np.float32)
+t = targets(labels, np.arange(3)).numpy()
+check("xy target is metres / XY_RANGE", t[:, :2], labels[:, :2] / C.XY_RANGE, 1e-6)
+xy, y2 = decode(t.astype(np.float64))
+check("decode(targets) xy, metres", xy, labels[:, :2], 1e-6)
+check("decode(targets) yaw, radians", y2, yaw, 1e-5)
+
 print(f"\n{'ALL PASS' if not FAILED else 'FAILED: ' + ', '.join(FAILED)}")
 sys.exit(1 if FAILED else 0)
